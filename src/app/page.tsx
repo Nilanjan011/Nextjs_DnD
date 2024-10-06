@@ -1,101 +1,100 @@
-import Image from "next/image";
+'use client';
+import { useRef, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const dragItem = useRef<any>();
+  const dragContainer = useRef<any>();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  const initialData = {
+    Hero: [
+      "Shaktimaan",
+      "Krrish",
+      "The Flying Jatt",
+      "Mr. India",
+    ],
+    "Indian film": ["Krrish 4", "kalki"],
+    Villain: [
+      "Mogambo",
+      "Kaal",
+      "Tamraj Kilvish",
+    ],
+  };
+
+  const [data, setData] = useState(initialData);
+  const [shwSpace, setsShwSpace] = useState<string>('');
+
+
+  const handleDragStart = (e: any, item: string, container: string, idx: number) => {
+    dragItem.current = item;
+    dragContainer.current = container;
+    e.target.style.opacity = "0.2";
+  };
+
+  const handleDragEnd = (e: any) => {
+    e.target.style.opacity = "1";
+    setsShwSpace('');
+  }
+
+  const handleDragOver = (e: any, idx: number, container: string) => {
+    setsShwSpace(`${container}_${idx}`);
+  }
+
+  const handleDrop = (e: any, targetContainer: any) => {
+    setsShwSpace('');
+    const item = dragItem.current;
+    const sourceContainer = dragContainer.current;
+    setData((prev) => {
+      const newData = { ...prev };
+      newData[sourceContainer] = newData[sourceContainer].filter(
+        (i: any) => i !== item
+      );
+
+      if ( !newData[targetContainer].includes(item)) {
+        // setData call twice times, so that reason i check item already exists or not
+        // but i don't understand why setData call twice times?
+        let strarr = shwSpace.split('_'); 
+        newData[targetContainer].splice(strarr[1], 0, item)
+      
+      }
+      return newData;
+    });
+  };
+
+  return (
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-slate-800 ">
+      <div className="text-white tracking-tight ">
+        <p className="text-3xl p-1">Next js Drag and Drop</p>
+        <p className="text-2xl p-1 ">Without any package or librery</p>
+        <hr />
+      </div>
+      <main className="flex flex-row gap-12 my-auto sm:items-start">
+        {Object.keys(data).map((container, index) => (
+          <div key={index} className="bg-slate-400 text-amber-100 p-3 rounded-lg" onDrop={(e) => handleDrop(e, container)} onDragOver={e => e.preventDefault()}>
+            <h3 className="text-3xl">{container}</h3>
+            <hr />
+            <div className="text-xl">
+              <ul className="p-5 ">
+
+                {data[container].map((item: string, idx: number) => (
+                  <>
+                    {shwSpace == `${container}_${idx}` && <li className="h-[20px]"></li>}
+                    <li key={idx}
+                      onDragStart={(e) => handleDragStart(e, item, container, idx)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(e) => handleDragOver(e, idx, container)}
+                      draggable="true"
+                      className="p-2 px-5 cursor-move rounded-xl bg-slate-500 m-2 hover:mt-2">
+                      {item}
+                    </li>
+                  </>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+        ))}
+
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
